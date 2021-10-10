@@ -5,7 +5,7 @@ LINKER=g++
 
 # Compile Options
 STDCPP=c++14
-OPT=-g
+OPT=-g -pthread
 
 # OS specefic
 ifeq ($(OS), Windows_NT)
@@ -21,27 +21,19 @@ endif
 
 default: all
 
-all: demo_client exec
-
-# Client Top Level Target : demo_client
-
-demo_client: demo_client.o
-	${LINKER}  demo_client.o -o demo_client.exe -l wsock32
-
-demo_client.o: demo_client.cpp
-	${COMPILER} -std=${STDCPP} ${OPT} -c demo_client.cpp -o demo_client.o
-
-# Server Top Level Target : exec
-# lib "server" : server.hpp server.cpp
+all: exec
 
 exec: exec.o
-	${LINKER}  exec.o server.o -o exec.exe -l wsock32
+	${LINKER}  ClientHandler.o TCPServer.o exec.o -o exec.exe -l wsock32
 
-exec.o: exec.cpp server.o
+exec.o: exec.cpp TCPServer.o
 	${COMPILER} -std=${STDCPP} ${OPT} -c exec.cpp -o exec.o
 
-server.o: server.cpp server.hpp
-	${COMPILER} -std=${STDCPP} ${OPT} -c server.cpp -o server.o
+TCPServer.o: TCPServer.cpp ClientHandler.o
+	${COMPILER} -std=${STDCPP} ${OPT} -c TCPServer.cpp -o TCPServer.o
+
+ClientHandler.o: ClientHandler.cpp
+	${COMPILER} -std=${STDCPP} ${OPT} -c ClientHandler.cpp -o ClientHandler.o
 
 clean:
 	${RM} *.o *.exe
